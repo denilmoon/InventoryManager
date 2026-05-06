@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum ItemTier {
+  TIER_1
+  TIER_2
+}
+
+enum Department {
+  INSTALL
+  SERVICE
+  MIXED
+  OTHER
+}
+
+enum LocationType {
+  WAREHOUSE
+  ZONE
+  SHELF
+  STORAGE_UNIT
+  VEHICLE
+}
+
+enum ShipmentStatus {
+  PENDING
+  ORDERED
+  IN_TRANSIT
+  RECEIVED
+  ISSUE
+}
+
+enum ReorderStatus {
+  PENDING
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+enum RecipientType {
+  INSTALLER_TEAM
+  TECHNICIAN
+}
+
+enum ReconciliationType {
+  BUSINESS
+  TECHNICIAN
+}
+
+enum ReconciliationStatus {
+  OPEN
+  SUBMITTED
+  REVIEWED
+  FLAGGED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  RECEIVE
+  DISPATCH
+  ADJUST
+  IMPORT
+  REPORT_GENERATED
+}
+
+// ─────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────
+
+model User {
+  id                   String    @id @default(uuid())
+  name                 String
+  email                String    @unique
+  passwordHash         String
+  role                 Role      @default(STAFF)
+  notificationSettings Json?
+  active               Boolean   @default(true)
+  resetToken           String?
+  resetTokenExpiry     DateTime?
+  createdAt            DateTime  @default(now())
+
+  // Relations
+  stockCountsUpdated   StockCount[]
+  shipmentsReceived    Shipment[]        @relation("ReceivedBy")
+  shipmentsCreated     Shipment[]        @relation("CreatedBy")
+  reordersRequested    Reorder[]
+  dispatchLogs         DispatchLog[]
+  reconciliationsReviewed MonthlyReconciliation[] @relation("ReviewedBy")
+  reconciliationsCreated  MonthlyReconciliation[] @relation("CreatedBy")
+  auditLogs            AuditLog[]
+}
+
+// ─────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────
+
+model Location {
+  id               String       @id @default(uuid())
+  name             String
+  locationType     LocationType
+  parentLocationId String?
+  address          String?
+  notes            String?
+
+  // Self-relation for hierarchy
+  parent           Location?    @relation("LocationChildren", fields: [parentLocationId], references: [id])
+  children         Location[]   @relation("LocationChildren")
+
+  // Relations
+  stockCounts      StockCount[]
+  shipmentsDestined Shipment[]
+  dispatchLineItems DispatchLineItem[]
+}
+
+// ─────────────────────────────────────────
+// SUPPLIER & SHIPPER
+// ─────────────────────────────────────────
+
+model Supplier {
+  id       String   @id @default(uuid())
+  name     String
+  phone    String?
+  email    String?
+  website  String?
+  notes    String?
+
+  items     InventoryItem[]
+  shipments Shipment[]
+  shippers  SupplierShipper[]
+}
+
+model Shipper {
+  id    String  @id @default(uuid())
+  name  String
+  notes String?
+
+  shipments  Shipment[]
+  suppliers  SupplierShipper[]
+}
+
+model SupplierShipper {
+  supplierId String
+  shipperId  String
+
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  shipper    Shipper  @relation(fields: [shipperId], references: [id])
+
+  @@id([supplierId, shipperId])
+}
+
+// ─────────────────────────────────────────
+// INVENTORY ITEM
+// ─────────────────────────────────────────
+
+model InventoryItem {
+  id                   String     @id @default(uuid())
+  name                 String
+  sku                  String?
+  hasSerialNumbers     Boolean    @default(false)
+  tier                 ItemTier   @default(TIER_2)
+  department           Department @default(OTHER)
+  reorderThreshold     Int        @default(0)
+  stockBaseline        Int        @default(0)
+  estimatedShippingDays Int?
+  reorderLink          String?
+  pricePerPkg          Decimal?
+  unitsPerPkg          Int?
+  supplierId           String?
+  notes                String?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  // Relations
+  supplier             Supplier?          @relation(fields: [supplierId], references: [id])
+  stockCounts          StockCount[]
+  shipmentLineItems    ShipmentLineItem[]
+  reorders             Reorder[]
+  dispatchLineItems    DispatchLineItem[]
+  reconciliationItems  ReconciliationLineItem[]
+}
+
+// ─────────────────────────────────────────
+// STOCK COUNT
+// ─────────────────────────────────────────
+
+model StockCount {
+  id         String   @id @default(uuid())
+  itemId     String
+  locationId String
+  quantity   Int      @default(0)
+  updatedAt  DateTime @updatedAt
+  updatedById String?
+
+  item       InventoryItem @relation(fields: [itemId], references: [id])
+  location   Location      @relation(fields: [locationId], references: [id])
+  updatedBy  User?         @relation(fields: [updatedById], references: [id])
+
+  @@unique([itemId, locationId])
+}
+
+// ─────────────────────────────────────────
+// SHIPMENT & RECEIVING
+// ─────────────────────────────────────────
+
+model Shipment {
+  id                  String         @id @default(uuid())
+  supplierId          String
+  shipperId           String?
+  status              ShipmentStatus @default(PENDING)
+  shipDate            DateTime?
+  estimatedArrival    DateTime?
+  receivedDate        DateTime?
+  receivedById        String?
+  destinationLocationId String?
+  notes               String?
+  createdAt           DateTime       @default(now())
+  createdById         String
+
+  supplier            Supplier       @relation(fields: [supplierId], references: [id])
+  shipper             Shipper?       @relation(fields: [shipperId], references: [id])
+  receivedBy          User?          @relation("ReceivedBy", fields: [receivedById], references: [id])
+  createdBy           User           @relation("CreatedBy", fields: [createdById], references: [id])
+  destination         Location?      @relation(fields: [destinationLocationId], references: [id])
+  lineItems           ShipmentLineItem[]
+  reorder             Reorder?
+}
+
+model ShipmentLineItem {
+  id              String  @id @default(uuid())
+  shipmentId      String
+  inventoryItemId String
+  expectedQty     Int
+  receivedQty     Int?
+  serialNumbers   Json?
+
+  shipment        Shipment      @relation(fields: [shipmentId], references: [id])
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// REORDER
+// ─────────────────────────────────────────
+
+model Reorder {
+  id                String        @id @default(uuid())
+  inventoryItemId   String
+  requestedById     String
+  requestedAt       DateTime      @default(now())
+  quantityRequested Int
+  status            ReorderStatus @default(PENDING)
+  shipmentId        String?       @unique
+  notes             String?
+
+  inventoryItem     InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  requestedBy       User          @relation(fields: [requestedById], references: [id])
+  shipment          Shipment?     @relation(fields: [shipmentId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// INSTALLER TEAMS & TECHNICIANS
+// ─────────────────────────────────────────
+
+model InstallerTeam {
+  id           String  @id @default(uuid())
+  name         String
+  contactName  String?
+  contactPhone String?
+  notes        String?
+
+  dispatchLogs DispatchLog[]
+}
+
+model Technician {
+  id                String  @id @default(uuid())
+  name              String
+  employeeId        String?
+  assignedVehicleId String? @unique
+  active            Boolean @default(true)
+  notes             String?
+
+  vehicle            Vehicle?       @relation(fields: [assignedVehicleId], references: [id])
+  dispatchLogs       DispatchLog[]
+  reconciliations    MonthlyReconciliation[]
+}
+
+model Vehicle {
+  id           String  @id @default(uuid())
+  licensePlate String
+  make         String?
+  model        String?
+  year         Int?
+  notes        String?
+
+  technician   Technician?
+}
+
+// ─────────────────────────────────────────
+// DISPATCH
+// ─────────────────────────────────────────
+
+model DispatchLog {
+  id              String        @id @default(uuid())
+  dispatchedById  String
+  dispatchedAt    DateTime      @default(now())
+  recipientType   RecipientType
+  installerTeamId String?
+  technicianId    String?
+  notes           String?
+
+  dispatchedBy    User           @relation(fields: [dispatchedById], references: [id])
+  installerTeam   InstallerTeam? @relation(fields: [installerTeamId], references: [id])
+  technician      Technician?    @relation(fields: [technicianId], references: [id])
+  lineItems       DispatchLineItem[]
+}
+
+model DispatchLineItem {
+  id              String @id @default(uuid())
+  dispatchLogId   String
+  inventoryItemId String
+  quantity        Int
+  serialNumbers   Json?
+  sourceLocationId String
+
+  dispatchLog     DispatchLog   @relation(fields: [dispatchLogId], references: [id])
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  sourceLocation  Location      @relation(fields: [sourceLocationId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// MONTHLY RECONCILIATION
+// ─────────────────────────────────────────
+
+model MonthlyReconciliation {
+  id            String                @id @default(uuid())
+  type          ReconciliationType
+  technicianId  String?
+  month         String
+  status        ReconciliationStatus  @default(OPEN)
+  createdAt     DateTime              @default(now())
+  createdById   String
+  reviewedById  String?
+  notes         String?
+
+  technician    Technician?           @relation(fields: [technicianId], references: [id])
+  createdBy     User                  @relation("CreatedBy", fields: [createdById], references: [id])
+  reviewedBy    User?                 @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  lineItems     ReconciliationLineItem[]
+}
+
+model ReconciliationLineItem {
+  id                  String  @id @default(uuid())
+  reconciliationId    String
+  inventoryItemId     String
+  openingQty          Int     @default(0)
+  receivedQty         Int     @default(0)
+  dispatchedQty       Int     @default(0)
+  reportedUsedQty     Int?
+  physicalCountQty    Int     @default(0)
+  expectedQty         Int     @default(0)
+  variance            Int     @default(0)
+  flagged             Boolean @default(false)
+  notes               String?
+
+  reconciliation      MonthlyReconciliation @relation(fields: [reconciliationId], references: [id])
+  inventoryItem       InventoryItem         @relation(fields: [inventoryItemId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String
+  action     AuditAction
+  entityType String
+  entityId   String
+  details    Json
+  timestamp  DateTime    @default(now())
+
+  user       User        @relation(fields: [userId], references: [id])
+}
