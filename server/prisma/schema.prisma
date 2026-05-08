@@ -186,6 +186,7 @@ model InventoryItem {
   notes                String?
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
+  imageUrl             String?
 
   // Relations
   supplier             Supplier?          @relation(fields: [supplierId], references: [id])
