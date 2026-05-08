@@ -194,6 +194,7 @@ model InventoryItem {
   reorders             Reorder[]
   dispatchLineItems    DispatchLineItem[]
   reconciliationItems  ReconciliationLineItem[]
+  tags                 ItemTag[]
 }
 
 // ─────────────────────────────────────────
@@ -396,4 +397,25 @@ model AuditLog {
   timestamp  DateTime    @default(now())
 
   user       User        @relation(fields: [userId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// TAGS
+// ─────────────────────────────────────────
+
+model Tag {
+  id    String   @id @default(uuid())
+  name  String   @unique
+
+  items ItemTag[]
+}
+
+model ItemTag {
+  itemId String
+  tagId  String
+
+  item   InventoryItem @relation(fields: [itemId], references: [id])
+  tag    Tag           @relation(fields: [tagId], references: [id])
+
+  @@id([itemId, tagId])
 }
