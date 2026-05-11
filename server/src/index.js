@@ -12,6 +12,12 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 
+// Import and use location routes
+const locationRoutes = require('./routes/locations');
+
+// add this line with the other app.use route lines
+app.use('/api/locations', locationRoutes);
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
