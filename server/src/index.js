@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const path = require('path');
 
 const authRoutes = require('./routes/auth');
 
@@ -14,6 +15,13 @@ app.use('/api/auth', authRoutes);
 
 // Import and use location routes
 const locationRoutes = require('./routes/locations');
+
+const inventoryRoutes = require('./routes/inventory');
+
+app.use('/api/inventory', inventoryRoutes);
+
+// Server uploaded images statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // add this line with the other app.use route lines
 app.use('/api/locations', locationRoutes);

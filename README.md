@@ -28,8 +28,11 @@ Built with React, Node.js/Express, PostgreSQL, and Prisma.
 
 ## Project Status
 
-**Current Phase:** Phase 1 — Foundation  
-*(Auth, database schema, project scaffold)*
+**Phase 1** — ✅ Complete  
+Auth system, JWT middleware, Prisma schema, Express scaffold
+
+**Phase 2** — 🔄 In Progress  
+Inventory routes, location routes, stock counts, audit log
 
 ---
 

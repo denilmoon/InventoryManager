@@ -235,6 +235,8 @@ Core product record. One per distinct item type.
 | notes | String? | |
 | createdAt | DateTime | |
 | updatedAt | DateTime | |
+| imageUrl | String? | Path to uploaded image file |
+| tags | ItemTag[] | Many-to-many relation to Tag model |
 
 ### StockCount
 Current quantity of an item at a specific location. One row per item + location combination.
@@ -466,6 +468,21 @@ Immutable record of every significant action. Cannot be edited or deleted.
 | entityId | String | ID of the affected record |
 | details | JSON | Snapshot of what changed |
 | timestamp | DateTime | |
+
+### Tag
+| Field | Type | Notes |
+|-------|------|-------|
+| id | UUID | |
+| name | String | Unique tag name |
+| items | ItemTag[] | |
+
+### ItemTag
+Join table linking items to tags.
+
+| Field | Type |
+|-------|------|
+| itemId | FK → InventoryItem |
+| tagId | FK → Tag |
 
 ---
 
