@@ -31,6 +31,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
@@ -47,3 +48,10 @@ app.get('/api/test-auth', authenticate, (req, res) => {
 app.get('/api/test-admin', authenticate, requireAdmin, (req, res) => {
   res.json({ message: 'You are an admin', user: req.user });
 });
+
+// Import and use dashboard routes
+const dashboardRoutes = require('./routes/dashboard');
+const stockCountRoutes = require('./routes/stockCounts');
+
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/stock-counts', stockCountRoutes);
