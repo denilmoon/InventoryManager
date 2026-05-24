@@ -1,28 +1,46 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import LoginPage from '@/pages/LoginPage';
+import DashboardPage from '@/pages/DashboardPage';
+import InventoryPage from '@/pages/InventoryPage';
+import ShipmentPage from '@/pages/ShipmentPage';
+import ReorderPage from '@/pages/ReorderPage';
+import SettingsPage from '@/pages/SettingsPage';
+import AppShell from '@/components/layout/AppShell';
+
+// Protects routes — redirects to login if not authenticated
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
+}
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Ecowater Inventory Manager</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">
-            Shadcn and Tailwind are working correctly.
-          </p>
-          <div className="flex gap-2">
-            <Badge variant="default">TIER 1</Badge>
-            <Badge variant="secondary">TIER 2</Badge>
-            <Badge variant="destructive">LOW STOCK</Badge>
-          </div>
-          <Button>Get Started</Button>
-        </CardContent>
-      </Card>
-    </div>
-  )
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <AppShell />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="inventory" element={<InventoryPage />} />
+            <Route path="shipments" element={<ShipmentPage />} />
+            <Route path="reorders" element={<ReorderPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
