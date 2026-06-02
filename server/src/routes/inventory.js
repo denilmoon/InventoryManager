@@ -456,22 +456,24 @@ router.put('/:id/tags', authenticate, async (req, res) => {
     await prisma.itemTag.deleteMany({ where: { itemId: req.params.id } });
 
     if (tags.length > 0) {
-      await Promise.all(
-        tags.map((tagName) =>
-          prisma.itemTag.create({
-            data: {
-              itemId: req.params.id,
-              tag: {
-                connectOrCreate: {
-                  where: { name: tagName },
-                  create: { name: tagName },
-                },
-              },
+  await Promise.all(
+    tags.map((tagName) =>
+      prisma.itemTag.create({
+        data: {
+          item: {
+            connect: { id: req.params.id }
+          },
+          tag: {
+            connectOrCreate: {
+              where: { name: tagName },
+              create: { name: tagName },
             },
-          })
-        )
-      );
-    }
+          },
+        },
+      })
+    )
+  );
+}
 
     const updated = await prisma.inventoryItem.findUnique({
       where: { id: req.params.id },

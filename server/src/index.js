@@ -55,3 +55,7 @@ const stockCountRoutes = require('./routes/stockCounts');
 
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/stock-counts', stockCountRoutes);
+
+// Import and use supplier routes
+const supplierRoutes = require('./routes/suppliers');
+app.use('/api/suppliers', supplierRoutes);
