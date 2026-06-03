@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import ItemFormDialog from '@/components/inventory/ItemFormDialog'; // For add/edit form (not implemented in this snippet)
 import StockAdjustDialog from '@/components/inventory/StockAdjustDialog'; // For stock adjustment (not implemented in this snippet)
+import DispatchDialog from '@/components/inventory/DispatchDialog'; // For dispatching items (not implemented in this snippet)
 import {
   Table,
   TableBody,
@@ -30,6 +31,7 @@ import {
   Trash2,
   ArrowUpDown,
   PackageOpen,
+  Send,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────
@@ -94,6 +96,9 @@ export default function InventoryPage() {
   // Stock adjust dialog state
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustingItem, setAdjustingItem] = useState(null);
+
+  // Dispatch dialog state
+  const [dispatchOpen, setDispatchOpen] = useState(false);
 
   // ── Fetch items ──────────────────────────
   const fetchItems = useCallback(async () => {
@@ -167,22 +172,35 @@ export default function InventoryPage() {
   // RENDER
   // ─────────────────────────────────────────
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Page header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Inventory</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {pagination.total} item{pagination.total !== 1 ? 's' : ''} total
-          </p>
-        </div>
-        <Button className="gap-2" onClick={() => { setEditingItem(null); setFormOpen(true); }}>
-  <Plus className="h-4 w-4" />
-  Add Item
-</Button>
+  <div className="p-6 max-w-7xl mx-auto">
+    {/* Page header */}
+    <div className="flex items-center justify-between mb-6">
+      <div>
+        <h1 className="text-2xl font-bold">Inventory</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          {pagination.total} item{pagination.total !== 1 ? 's' : ''} total
+        </p>
       </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => setDispatchOpen(true)}
+        >
+          <Send className="h-4 w-4" />
+          Dispatch
+        </Button>
+        <Button
+          className="gap-2"
+          onClick={() => { setEditingItem(null); setFormOpen(true); }}
+        >
+          <Plus className="h-4 w-4" />
+          Add Item
+        </Button>
+      </div>
+    </div>
 
-      {/* Search and filters */}
+    {/* Search and filters */}
       <Card className="mb-4">
         <CardContent className="pt-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -458,6 +476,11 @@ export default function InventoryPage() {
           onClose={() => { setAdjustOpen(false); setAdjustingItem(null); }}
           onSaved={fetchItems}
           item={adjustingItem}
+        />
+        <DispatchDialog
+          open={dispatchOpen}
+          onClose={() => setDispatchOpen(false)}
+          onSaved={fetchItems}
         />
     </div>
   );
