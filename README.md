@@ -15,8 +15,8 @@ Built with React, Node.js/Express, PostgreSQL, and Prisma.
 |-------|--------|-------------|
 | Phase 1 — Foundation | ✅ Complete | Auth system, JWT middleware, Prisma schema, Express scaffold |
 | Phase 2 — Inventory Core | ✅ Complete | Inventory CRUD, stock counts, dashboard, supplier routes, React UI |
-| Phase 3 — Shipment & Dispatch | 🔄 Up Next | Inbound/outbound pipeline, reorder flow, dispatch dialog |
-| Phase 4 — Reports & Reconciliation | ⏳ Upcoming | Weekly/monthly reports, tech reconciliation |
+| Phase 3 — Shipment & Dispatch | ✅ Complete | Inbound/outbound pipeline, reorder flow, dispatch dialog |
+| Phase 4 — Reports & Reconciliation | 🔄 Up Next | Weekly/monthly reports, tech reconciliation |
 | Phase 5 — Polish & Deployment | ⏳ Upcoming | Mobile polish, notifications, production deployment |
 
 ---
