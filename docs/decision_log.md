@@ -7,6 +7,11 @@ Newest entries at the top.
 
 | Date | Decision | Choice | Reason |
 |------|----------|--------|--------|
+| June 2026 | Reorder vs Shipment separation | Kept as two distinct records | Reorder = staff request; Shipment = purchasing action. Different owners, different levels of commitment. Historical reorder data shows patterns (frequency, lead times) that inform threshold adjustments. |
+| June 2026 | Dispatch dialog design | Multi-step (recipient → items → confirm) | Boss feedback confirmed dispatch is a primary daily action. Three steps prevent mistakes — recipient first forces intent, item selection is searchable, confirm step shows full summary before stock decrements. |
+| June 2026 | Status advance confirmation | window.confirm before every irreversible status change | Prevents accidental clicks on status pipeline buttons. Receive dialog acts as its own confirmation. Will be upgraded to Shadcn dialog in Phase 5 polish. |
+| June 2026 | Dispatch and receive transactions | Prisma $transaction for all stock updates | Stock decrement/increment must be atomic — if one line item fails, none should update. Prevents partial dispatches leaving counts in an inconsistent state. |
+| June 2026 | Supplier/shipper management | Postman for now, UI in future | Small fixed set of suppliers and shippers. Full management UI deferred to Settings page expansion after Phase 4. |
 | June 2026 | Region toggle (Texas/Iowa/Future) | Deferred to future phase | Architecture already supports regions via hierarchical locations. Iowa workflows are unknown — building the toggle before onboarding Iowa means building the wrong thing. Revisit when Iowa is ready to onboard. Noted in Future Improvements. |
 | June 2026 | Dispatch button placement | Top of inventory page header alongside Add Item | Boss feedback confirmed dispatch is a primary daily action (morning for install teams, afternoon for techs). Multi-step dialog: step 1 picks recipient, step 2 builds item list. Builds in Phase 3 alongside shipment pipeline. |
 | June 2026 | Component library | Shadcn/ui with Tailwind, minimal custom CSS | Mobile responsiveness, professional UI, and build speed all required simultaneously. Shadcn generates code into the project so components are fully customizable. Custom CSS deferred to Phase 5 for brand-specific theming (blue water theme). |
