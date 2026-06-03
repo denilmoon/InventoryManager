@@ -59,3 +59,16 @@ app.use('/api/stock-counts', stockCountRoutes);
 // Import and use supplier routes
 const supplierRoutes = require('./routes/suppliers');
 app.use('/api/suppliers', supplierRoutes);
+
+// Import and use shipper, shipment, reorder, people, and dispatch routes
+const shipperRoutes = require('./routes/shippers');
+const shipmentRoutes = require('./routes/shipments');
+const reorderRoutes = require('./routes/reorders');
+const peopleRoutes = require('./routes/people');
+const dispatchRoutes = require('./routes/dispatch');
+
+app.use('/api/shippers', shipperRoutes);
+app.use('/api/shipments', shipmentRoutes);
+app.use('/api/reorders', reorderRoutes);
+app.use('/api/people', peopleRoutes);
+app.use('/api/dispatch', dispatchRoutes);
