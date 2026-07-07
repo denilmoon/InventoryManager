@@ -1,7 +1,7 @@
 # Ecowater Inventory Manager — Project Specification
 
 **Version:** 1.3  
-**Author:** [Your Name]  
+**Author:** Denilson Montalvo 
 **Started:** September 2025  
 **Last Updated:** June 2026  
 **Repository:** https://github.com/denilmoon/InventoryManager  
