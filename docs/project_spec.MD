@@ -12,7 +12,7 @@
 
 1. [Project Overview](#1-project-overview)
 2. [Business Context](#2-business-context)
-3. [Stakeholders](#3-stakeholders)
+3. [Target Users](#3-target-users)
 4. [Goals & Success Criteria](#4-goals--success-criteria)
 5. [Functional Requirements](#5-functional-requirements)
 6. [Non-Functional Requirements](#6-non-functional-requirements)
@@ -80,11 +80,11 @@ Installation materials such as PEX pipe, fittings, connectors, foam insulation, 
 
 ---
 
-## 3. Stakeholders
+## 3. Target Users
 
 | Name | Role | Involvement |
 |------|------|-------------|
-| Developer (You) | Admin, Builder | Designs, builds, and maintains the system |
+| Me | Admin | Designs, builds, and maintains the system |
 | Anton | Department Head | Requirements input, system user |
 | Kris | Department Head | Requirements input, system user |
 | Liz | Department Head | Requirements input, system user |
